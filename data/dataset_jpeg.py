@@ -17,15 +17,17 @@ class DatasetJPEG(data.Dataset):
         # get the path of H, return None if input is None
         # -------------------------------------
         self.paths_H = util.get_image_paths(opt['dataroot_H'])
+        self.paths_L = util.get_image_paths(opt['dataroot_L'])
 
     def __getitem__(self, index):
         # -------------------------------------
         # get H image
         # -------------------------------------
         H_path = self.paths_H[index]
-        img_H = util.imread_uint(H_path, self.n_channels)
+        L_path = self.paths_L[index]
 
-        L_path = H_path
+        img_H = util.imread_uint(H_path, self.n_channels)
+        img_L = util.imread_uint(L_path, self.n_channels)
 
         if self.opt['phase'] == 'train':
             """
@@ -45,12 +47,14 @@ class DatasetJPEG(data.Dataset):
             rnd_h = random.randint(0, max(0, H - self.patch_size_plus8))
             rnd_w = random.randint(0, max(0, W - self.patch_size_plus8))
             patch_H = img_H[rnd_h:rnd_h + self.patch_size_plus8, rnd_w:rnd_w + self.patch_size_plus8, :]
+            patch_L = img_L[rnd_h:rnd_h + self.patch_size_plus8, rnd_w:rnd_w + self.patch_size_plus8, :]
 
             # ---------------------------------
             # augmentation - flip, rotate
             # ---------------------------------
             mode = random.randint(0, 7)
             patch_H = util.augment_img(patch_H, mode=mode)
+            patch_L = util.augment_img(patch_L, mode=mode)
 #            if random.random() > 0.5:
 #                patch_H = self.jitter(util.uint2tensor4(patch_H))
 #                patch_H = util.tensor2uint(patch_H)
@@ -60,7 +64,7 @@ class DatasetJPEG(data.Dataset):
             # ---------------------------------
 #            img_H = util.uint2tensor3(patch_H)
 #            img_L = img_H.clone()
-            img_L = patch_H.copy()
+            img_L = patch_L.copy()
             img_H = patch_H.copy()
 
             # ---------------------------------
@@ -73,10 +77,10 @@ class DatasetJPEG(data.Dataset):
                 quality_factor = random.choice([10,20,30,40,50,60])
 
             noise_level = (100-quality_factor)/100.0
-            img_L = cv2.cvtColor(img_L, cv2.COLOR_RGB2BGR)
-            result, encimg = cv2.imencode('.jpg', img_L, [int(cv2.IMWRITE_JPEG_QUALITY), quality_factor])
-            img_L = cv2.imdecode(encimg, 1)
-            img_L = cv2.cvtColor(img_L, cv2.COLOR_BGR2RGB)
+            #img_L = cv2.cvtColor(img_L, cv2.COLOR_RGB2BGR)
+            #result, encimg = cv2.imencode('.jpg', img_L, [int(cv2.IMWRITE_JPEG_QUALITY), quality_factor])
+            #img_L = cv2.imdecode(encimg, 1)
+            #img_L = cv2.cvtColor(img_L, cv2.COLOR_BGR2RGB)
 
             noise_level = torch.FloatTensor([noise_level])
 
@@ -105,15 +109,15 @@ class DatasetJPEG(data.Dataset):
             # get L/H/M image pairs
             # --------------------------------
             """
-            img_L = img_H.copy()
+            #img_L = img_H.copy()
             
             
             quality_factor = 10
             noise_level = (100-quality_factor)/100.0
-            img_L = cv2.cvtColor(img_L, cv2.COLOR_RGB2BGR)
-            result, encimg = cv2.imencode('.jpg', img_L, [int(cv2.IMWRITE_JPEG_QUALITY), quality_factor])
-            img_L = cv2.imdecode(encimg, 1)
-            img_L = cv2.cvtColor(img_L, cv2.COLOR_BGR2RGB)
+            #img_L = cv2.cvtColor(img_L, cv2.COLOR_RGB2BGR)
+            #result, encimg = cv2.imencode('.jpg', img_L, [int(cv2.IMWRITE_JPEG_QUALITY), quality_factor])
+            #img_L = cv2.imdecode(encimg, 1)
+            #img_L = cv2.cvtColor(img_L, cv2.COLOR_BGR2RGB)
 
             noise_level = torch.FloatTensor([noise_level])
 

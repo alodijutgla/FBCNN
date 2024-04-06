@@ -18,7 +18,7 @@ from models.select_model import define_Model
 # --------------------------------------------
 # training code for FBCNN
 '''
-def main(json_path='options/train_fbcnn_graydouble.json'):
+def main(json_path='options/train_fbcnn_color.json'):
     '''
     # ----------------------------------------
     # Step--1 (prepare opt)
@@ -36,7 +36,8 @@ def main(json_path='options/train_fbcnn_graydouble.json'):
     # ----------------------------------------
     # -->-->-->-->-->-->-->-->-->-->-->-->-->-
     init_iter, init_path_G = option.find_last_checkpoint(opt['path']['models'], net_type='G')
-    opt['path']['pretrained_netG'] = init_path_G
+    # 165000_QP47_LastLayer.pth, fbcnn_color.pth
+    opt['path']['pretrained_netG'] = "model_zoo/165000_QP47_LastLayer.pth"
     current_step = init_iter
 
     border = 0
@@ -231,6 +232,7 @@ def main(json_path='options/train_fbcnn_graydouble.json'):
 
                     logger.info('{:->4d}--> {:>10s} | PSNR : {:<4.2f}dB | SSIM : {:<4.3f}dB | PSNRB : {:<4.2f}dB'.format(idx, image_name_ext, current_psnr, current_ssim, current_psnrb))
                     logger.info('predicted quality factor: {:<4.2f}'.format(float(QF)))
+                    break
 
                 avg_psnr = avg_psnr / idx
                 avg_ssim = avg_ssim / idx

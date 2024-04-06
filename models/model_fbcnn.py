@@ -23,6 +23,9 @@ class ModelFBCNN(ModelBase):
         # ------------------------------------
         self.netG = define_G(opt).to(self.device)
         self.netG = DataParallel(self.netG)
+        for k, v in self.netG.named_parameters():
+            if not k.startswith('module.m_up2.0'):
+                v.requires_grad = False
 
     """
     # ----------------------------------------
@@ -42,6 +45,8 @@ class ModelFBCNN(ModelBase):
         self.define_optimizer()               # define optimizer
         self.define_scheduler()               # define scheduler
         self.log_dict = OrderedDict()         # log
+
+
     # ----------------------------------------
     # load pre-trained G model
     # ----------------------------------------

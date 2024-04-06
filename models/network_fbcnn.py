@@ -200,7 +200,7 @@ class QFAttention(nn.Module):
 
 
 class FBCNN(nn.Module):
-    def __init__(self, in_nc=3, out_nc=3, nc=[64, 128, 256, 512], nb=4, act_mode='R', downsample_mode='strideconv',
+    def __init__(self, in_nc=3, out_nc=3, nc=[64, 128, 256, 512], nb=4, act_mode='BR', downsample_mode='strideconv',
                  upsample_mode='convtranspose'):
         super(FBCNN, self).__init__()
 

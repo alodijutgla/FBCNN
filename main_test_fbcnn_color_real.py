@@ -11,19 +11,22 @@ import requests
 
 def main():
 
-    testset_name = 'Real'  # folder name of real images
+    testset_name = 'frames_QF23'  # folder name of real images
+    gt_name = 'frames_HQ'  # folder name of real images
     n_channels = 3            # set 1 for grayscale image, set 3 for color image
-    model_name = 'fbcnn_color.pth'
+    # 165000_QP47_LastLayer.pth, 200_G.pth, fbcnn_color.pth
+    model_name = '500_G.pth'
     nc = [64,128,256,512]
     nb = 4
     testsets = 'testsets'    
     results = 'test_results'     
 
-    do_flexible_control = True
+    do_flexible_control = False
     QF_control = [5,10,30,50,70,90] # adjust qf as input to provide different results
 
     result_name = testset_name + '_' + model_name[:-4]
     L_path = os.path.join(testsets, testset_name)
+    H_path = os.path.join(testsets, gt_name)
     E_path = os.path.join(results, result_name)   # E_path, for Estimated images
     util.mkdir(E_path)
 
@@ -51,7 +54,7 @@ def main():
     # ----------------------------------------
 
     from models.network_fbcnn import FBCNN as net
-    model = net(in_nc=n_channels, out_nc=n_channels, nc=nc, nb=nb, act_mode='R')
+    model = net(in_nc=n_channels, out_nc=n_channels, nc=nc, nb=nb, act_mode='BR')
     model.load_state_dict(torch.load(model_path), strict=True)
     model.eval()
     for k, v in model.named_parameters():
@@ -65,6 +68,8 @@ def main():
     test_results['psnrb'] = []
 
     L_paths = util.get_image_paths(L_path)
+    H_paths = util.get_image_paths(H_path)
+    avg_psnr = 0
     for idx, img in enumerate(L_paths):
 
         # ------------------------------------
@@ -73,6 +78,8 @@ def main():
         img_name, ext = os.path.splitext(os.path.basename(img))
         logger.info('{:->4d}--> {:>10s}'.format(idx+1, img_name+ext))
         img_L = util.imread_uint(img, n_channels=n_channels)
+        img_H = util.imread_uint(H_paths[idx], n_channels=n_channels)
+
        
         img_L = util.uint2tensor4(img_L)
         img_L = img_L.to(device)
@@ -88,6 +95,8 @@ def main():
         img_E = util.single2uint(img_E)
         logger.info('predicted quality factor: {:d}'.format(round(float(QF*100))))
         util.imsave(img_E, os.path.join(E_path, img_name+'.png'))
+        current_psnr = util.calculate_psnr(img_E, img_H, border=border)
+        avg_psnr += current_psnr
 
         if do_flexible_control:
             for QF_set in QF_control:
@@ -100,6 +109,7 @@ def main():
                 img_E = util.single2uint(img_E)
                 util.imsave(img_E, os.path.join(E_path, img_name + '_qf_'+ str(QF_set)+'.png'))
 
+    logger.info('PSNR : {:<4.2f}dB'.format(avg_psnr/len(L_paths)))
 
 if __name__ == '__main__':
     main()
